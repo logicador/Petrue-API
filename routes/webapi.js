@@ -530,16 +530,200 @@ router.post('/upload/image', (req, res) => {
 
 // 펫 추가
 router.post('/add/pet', async (req, res) => {
-    if (!f.isLogined(req.session)) {
-        res.json({ status: 'ERR_NO_PERMISSION' });
+    // if (!f.isLogined(req.session)) {
+    //     res.json({ status: 'ERR_NO_PERMISSION' });
+    //     return;
+    // }
+
+    let thumbnail = f.ntb(req.body.thumbnail);
+    let name = req.body.name; // length
+    let birth = req.body.birth; // number
+    let bId = req.body.bId; // number
+    let gender = req.body.gender; // M F
+    let weight = req.body.weight; // null float(double)
+    let bcs = req.body.bcs; // number
+    let neuter = req.body.neuter; // Y N D
+    let inoculation = req.body.inoculation; // Y N D
+    let inoculationText = f.ntb(req.body.inoculationText); // null
+    let serial = req.body.serial; // Y N D
+    let serialNo = f.ntb(req.body.serialNo); // null
+    let feedPId = req.body.feedPId; // null number
+    let snackPId = req.body.snackPId; // null number
+
+    let inoculationIdList = req.body.inoculationIdList; // null
+    let diesaseIdList = req.body.diesaseIdList; // null
+    let allergyIdList = req.body.allergyIdList; // null
+
+    let query = "";
+    let params = [];
+    let [result, fields] = [null, null];
+
+    // Start 유효성 검사
+
+    // 필수값 체크
+    if (f.isNone(name) || f.isNone(birth) || f.isNone(bId) || f.isNone(gender) || 
+        f.isNone(bcs) || f.isNone(neuter) || f.isNone(inoculation) || f.isNone(serial)) {
+        res.json({ status: 'ERR_WRONG_PARAMS' });
         return;
     }
 
-    let registType = req.body.registType;
-    let email = req.body.email;
-    let password = req.body.password;
-    let nickName = req.body.nickName;
+    // 숫자 체크
+    if (!f.isInt(birth)) {
+        res.json({ status: 'ERR_WRONG_PARAMS' });
+        return;
+    }
+    if (!f.isInt(bId)) {
+        res.json({ status: 'ERR_WRONG_PARAMS' });
+        return;
+    }
+    if (!f.isInt(bcs)) {
+        res.json({ status: 'ERR_WRONG_PARAMS' });
+        return;
+    }
+    if (!f.isNone(feedPId) && !f.isInt(feedPId)) {
+        res.json({ status: 'ERR_WRONG_PARAMS' });
+        return;
+    }
+    if (!f.isNone(snackPId) && !f.isInt(snackPId)) {
+        res.json({ status: 'ERR_WRONG_PARAMS' });
+        return;
+    }
 
+    // 성별 체크
+    if (gender != 'M' && gender != 'F') {
+        res.json({ status: 'ERR_WRONG_PARAMS' });
+        return;
+    }
+
+    // Y N D 체크
+    if (neuter != 'Y' && neuter != 'N' && neuter != 'D') {
+        res.json({ status: 'ERR_WRONG_PARAMS' });
+        return;
+    }
+    if (inoculation != 'Y' && inoculation != 'N' && inoculation != 'D') {
+        res.json({ status: 'ERR_WRONG_PARAMS' });
+        return;
+    }
+    if (serial != 'Y' && serial != 'N' && serial != 'D') {
+        res.json({ status: 'ERR_WRONG_PARAMS' });
+        return;
+    }
+
+    // bcs 유효성 체크 (1~5)
+    if (parseInt(bcs) < 1 || parseInt(bcs) > 5) {
+        res.json({ status: 'ERR_WRONG_PARAMS' });
+        return;
+    }
+
+    // 이름 길이 1 - 8자 (12자)
+    if (!f.isValidStrLength(10, 1, 8, name)) {
+        res.json({ status: 'ERR_WRONG_PARAMS' });
+        return;
+    }
+
+    // 생일 유효성 체크
+    let birthRegExp = /^[0-9]{8}$/;
+    if (!birthRegExp.test(birth)) {
+        res.json({ status: 'ERR_WRONG_PARAMS' });
+        return;
+    }
+    
+    // 연월일 자르기
+    let splitBirthYear = birth.substring(0, 4);
+    let splitBirthMonth = birth.substring(4, 6);
+    let splitBirthDay = birth.substring(6, 8);
+    // Date로 Convert
+    let convertDate = new Date(splitBirthYear, (parseInt(splitBirthMonth) - 1), splitBirthDay);
+    let convertYear = convertDate.getFullYear();
+    let convertMonth = convertDate.getMonth() + 1;
+    let convertDay = convertDate.getDate();
+    // 계산 위한 Int 형변환
+    let birthYear = parseInt(splitBirthYear);
+    let birthMonth = parseInt(splitBirthMonth);
+    let birthDay = parseInt(splitBirthDay);
+
+    // 입력된 날짜가 유효한지 (Date로 변경해서 입력한 날짜랑 같은지)
+    if (birthYear != convertYear || birthMonth != convertMonth || birthDay != convertDay) {
+        res.json({ status: 'ERR_WRONG_PARAMS' });
+        return;
+    }
+
+    // 오늘
+    let today = new Date();
+    let year = today.getFullYear();
+    let month = today.getMonth() + 1;
+    let day = today.getDate();
+
+    // 오늘 날짜 이후인지 체크
+    if (year < birthYear) {
+        res.json({ status: 'ERR_WRONG_PARAMS' });
+        return;
+    }
+    if (year == birthYear && month < birthMonth) {
+        res.json({ status: 'ERR_WRONG_PARAMS' });
+        return;
+    }
+    if (year == birthYear && month == birthMonth && day < birthDay) {
+        res.json({ status: 'ERR_WRONG_PARAMS' });
+        return;
+    }
+
+    // 몸무게 유효성 체크
+    if (!f.isNone(weight)) {
+        weight = parseFloat(weight);
+        if (isNaN(weight)) {
+            res.json({ status: 'ERR_WRONG_PARAMS' });
+            return;
+        }
+        if (weight > 999) {
+            res.json({ status: 'ERR_WRONG_PARAMS' });
+            return;
+        }
+        weight = weight.toFixed(2);
+    }
+
+    // 시리얼넘버 길이 체크 최대 20(30)
+    if (!f.isNone(serialNo) && (f.getByteLength(serialNo) > 60 || serialNo.length > 30)) {
+        res.json({ status: 'ERR_WRONG_PARAMS' });
+        return;
+    }
+
+    // 기초접종 직접입력 길이 체크 최대 30(50)
+    if (!f.isNone(inoculationText) && (f.getByteLength(inoculationText) > 90 || inoculationText.length > 50)) {
+        res.json({ status: 'ERR_WRONG_PARAMS' });
+        return;
+    }
+
+    // breed 존재하는지 체크
+    query = "SELECT * FROM t_breeds WHERE b_id = ?";
+    params = [bId];
+    [result, fields] = await pool.query(query, params);
+    if (result.length == 0) {
+        res.json({ status: 'ERR_NO_BREED' });
+        return;
+    }
+
+    // product 존재하는지 체크
+    params = [];
+    if (!f.isNone(feedPId)) params.push(feedPId);
+    if (!f.isNone(snackPId)) params.push(snackPId);
+    if (params.length > 0) {
+        query = "SELECT * FROM t_products WHERE p_id = ?";
+        if (params.length > 1) query += " OR p_id = ?";
+        [result, fields] = await pool.query(query, params);
+        if (result.length != params.length) {
+            res.json({ status: 'ERR_NO_PRODUCT' });
+            return;
+        }
+    }
+
+    // END 유효성 검사
+
+    inoculationIdList = f.getJSONList(inoculationIdList);
+    diesaseIdList = f.getJSONList(diesaseIdList);
+    allergyIdList = f.getJSONList(allergyIdList);
+
+    res.json({ status: 'OK', result: weight });
 });
 
 

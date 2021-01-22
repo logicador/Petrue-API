@@ -103,4 +103,33 @@ global.f.getByteLength = (s) => {
 	}
 };
 
+// JSON parse 체크
+global.f.getJSONList = (list) => {
+    try {
+        list = JSON.parse(list);
+        return list;
+    } catch(error) {
+        return [];
+    }
+};
+
+// 숫자 체크
+global.f.isInt = (value) => {
+    let v = parseInt(value);
+    if (isNaN(v)) return false;
+    return true;
+};
+
+// 문자 길이 체크
+global.f.isValidStrLength = (max, kMin, kMax, value) => {
+    let cnt = value.length;
+    let utf8Cnt = f.getByteLength(value);
+    if (utf8Cnt >= (kMin * 3) && utf8Cnt <= (kMax * 3)) {
+        if (cnt <= max) {
+            return true;
+        } else { return false; }
+    } else { return false; }
+};
+
+
 module.exports = app;
