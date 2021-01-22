@@ -46,7 +46,7 @@ router.post('/join', async (req, res) => {
             res.json({ status: 'ERR_WRONG_NICK_NAME' });
             return;
         }
-        
+
         query = "SELECT * FROM t_users WHERE u_email = ?";
         params = [email];
         [result, fields] = await pool.query(query, params);
@@ -122,12 +122,31 @@ router.post('/login', async (req, res) => {
         user = result[0];
     }
 
-    res.json({ status: 'OK', result: user });
+    if (!fs.existsSync(`public/images/users/${user.u_id}`)) {
+        fs.mkdirSync(`public/images/users/${user.u_id}`);
+    }
+    if (!fs.existsSync(`public/images/users/${user.u_id}/original`)) {
+        fs.mkdirSync(`public/images/users/${user.u_id}/original`);
+    }
+
+    req.session.isLogined = true;
+    req.session.uId = user.u_id;
+    req.session.uEmail = user.u_email;
+    req.session.uRegistType = user.u_regist_type;
+    req.session.uSocialId = user.u_social_id;
+    req.session.save(() => {
+        res.json({ status: 'OK', result: user });
+    });
 });
 
 
 // 견종 가져오기
 router.get('/get/breeds', (req, res) => {
+    if (!f.isLogined(req.session)) {
+        res.json({ status: 'ERR_NO_PERMISSION' });
+        return;
+    }
+
     let keyword = req.query.keyword;
 
     if (f.isNone(keyword)) {
@@ -167,6 +186,10 @@ router.get('/get/breeds', (req, res) => {
 
 // 기초접종 가져오기
 router.get('/get/inoculations', (req, res) => {
+    if (!f.isLogined(req.session)) {
+        res.json({ status: 'ERR_NO_PERMISSION' });
+        return;
+    }
 
     // For DEV_DEBUG
     const inoculationList = [
@@ -182,6 +205,11 @@ router.get('/get/inoculations', (req, res) => {
 
 // 사료 검색 (사료만 따로 / t_feed_nutrients 때문)
 router.get('/get/feeds', (req, res) => {
+    if (!f.isLogined(req.session)) {
+        res.json({ status: 'ERR_NO_PERMISSION' });
+        return;
+    }
+
     const feedList = [
         {p_id: 1, p_pc_id: 1, p_pb_id: 1, p_name: '브이플래닛 비건사료', p_price: 10000,
         p_thumbnail: '', p_origin: '', p_manufacturer: '', p_packing_volume: '',
@@ -262,6 +290,11 @@ router.get('/get/feeds', (req, res) => {
 
 // 제품 검색
 router.get('/get/products', (req, res) => {
+    if (!f.isLogined(req.session)) {
+        res.json({ status: 'ERR_NO_PERMISSION' });
+        return;
+    }
+
     const feedList = [
         {p_id: 1, p_pc_id: 1, p_pb_id: 1, p_name: '브이플래닛 비건사료', p_price: 10000,
         p_thumbnail: '', p_origin: '', p_manufacturer: '', p_packing_volume: '',
@@ -342,6 +375,11 @@ router.get('/get/products', (req, res) => {
 
 // 질병 가져오기
 router.get('/get/diseases', async (req, res) => {
+    if (!f.isLogined(req.session)) {
+        res.json({ status: 'ERR_NO_PERMISSION' });
+        return;
+    }
+
     let bpId = req.query.bpId;
 
     if (f.isNone(bpId)) {
@@ -363,7 +401,144 @@ router.get('/get/diseases', async (req, res) => {
 
 
 // 알러지 가져오기 allergy
-router.get('/get/allergies', (req, res) => {
+router.get('/get/food/categories', (req, res) => {
+    if (!f.isLogined(req.session)) {
+        res.json({ status: 'ERR_NO_PERMISSION' });
+        return;
+    }
+
+    let fc1Id = req.query.fc1Id;
+
+    if (f.isNone(fc1Id)) {
+        fc1Id = 'ALL';
+    }
+
+    const fcList = [
+        {fc1_id: 1, fc1_name: '육류', fc2List: [
+            {fc2_id: 1, fc2_name: '닭'},
+            {fc2_id: 2, fc2_name: '돼지'},
+            {fc2_id: 3, fc2_name: '소'},
+            {fc2_id: 4, fc2_name: '양'},
+            {fc2_id: 5, fc2_name: '토끼'},
+            {fc2_id: 6, fc2_name: '오리'},
+            {fc2_id: 7, fc2_name: '칠면조'},
+            {fc2_id: 8, fc2_name: '기타육류'}
+        ]},
+        {fc1_id: 2, fc1_name: '과채류', fc2List: [
+            {fc2_id: 9, fc2_name: '닭'},
+            {fc2_id: 10, fc2_name: '돼지'},
+            {fc2_id: 11, fc2_name: '소'},
+            {fc2_id: 12, fc2_name: '양'},
+            {fc2_id: 13, fc2_name: '토끼'},
+            {fc2_id: 14, fc2_name: '오리'},
+            {fc2_id: 15, fc2_name: '칠면조'},
+            {fc2_id: 16, fc2_name: '기타육류'}
+        ]},
+        {fc1_id: 3, fc1_name: '곡물 및 견과류', fc2List: [
+            {fc2_id: 17, fc2_name: '닭'},
+            {fc2_id: 18, fc2_name: '돼지'},
+            {fc2_id: 19, fc2_name: '소'},
+            {fc2_id: 20, fc2_name: '양'},
+            {fc2_id: 21, fc2_name: '토끼'},
+            {fc2_id: 22, fc2_name: '오리'},
+            {fc2_id: 23, fc2_name: '칠면조'},
+            {fc2_id: 24, fc2_name: '기타육류'}
+        ]},
+        {fc1_id: 4, fc1_name: '유제품 및 계란', fc2List: [
+            {fc2_id: 25, fc2_name: '닭'},
+            {fc2_id: 26, fc2_name: '돼지'},
+            {fc2_id: 27, fc2_name: '소'},
+            {fc2_id: 28, fc2_name: '양'},
+            {fc2_id: 29, fc2_name: '토끼'},
+            {fc2_id: 30, fc2_name: '오리'},
+            {fc2_id: 31, fc2_name: '칠면조'},
+            {fc2_id: 32, fc2_name: '기타육류'}
+        ]},
+        {fc1_id: 5, fc1_name: '해산물', fc2List: [
+            {fc2_id: 33, fc2_name: '닭'},
+            {fc2_id: 34, fc2_name: '돼지'},
+            {fc2_id: 35, fc2_name: '소'},
+            {fc2_id: 36, fc2_name: '양'},
+            {fc2_id: 37, fc2_name: '토끼'},
+            {fc2_id: 38, fc2_name: '오리'},
+            {fc2_id: 39, fc2_name: '칠면조'},
+            {fc2_id: 40, fc2_name: '기타육류'}
+        ]},
+        {fc1_id: 6, fc1_name: '기타', fc2List: [
+            {fc2_id: 41, fc2_name: '닭'},
+            {fc2_id: 42, fc2_name: '돼지'},
+            {fc2_id: 43, fc2_name: '소'},
+            {fc2_id: 44, fc2_name: '양'},
+            {fc2_id: 45, fc2_name: '토끼'},
+            {fc2_id: 46, fc2_name: '오리'},
+            {fc2_id: 47, fc2_name: '칠면조'},
+            {fc2_id: 48, fc2_name: '기타육류'}
+        ]}
+    ];
+
+    res.json({ status: 'OK', result: fcList });
+});
+
+
+// 이미지 업로드
+router.post('/upload/image', (req, res) => {
+    if (!f.isLogined(req.session)) {
+        res.json({ status: 'ERR_NO_PERMISSION' });
+        return;
+    }
+
+    let form = new formidable.IncomingForm();
+    form.encoding = 'utf-8';
+    form.uploadDir = 'upload/tmp';
+    form.multiples = true;
+    form.keepExtensions = true;
+
+    let uId = req.session.uId;
+
+    form.parse(req, (error, body, files) => {
+        if (error) {
+            console.log(error);
+            res.json({ status: 'ERR_UPLOAD' });
+            return;
+        }
+
+        let imageName = f.generateRandomId();
+
+        // 이미지 프로세싱
+        let imagePath = `public/images/users/${uId}/${imageName}.jpg`;
+        let originalImagePath = `public/images/users/${uId}/original/${imageName}.jpg`;
+        fs.rename(files.image.path, imagePath, () => {
+            fs.copyFile(imagePath, originalImagePath, async () => {
+
+                let originalWidth = imageSize(originalImagePath).width;
+                let rw = 0;
+                while (true) {
+                    if (fs.statSync(imagePath).size > 100000) {
+                        rw += 2;
+                        await sharp(originalImagePath)
+                            .resize({ width: parseInt(originalWidth * ((100 - rw) / 100)) })
+                            .toFile(imagePath);
+                    } else { break; }
+                }
+
+                res.json({ status: 'OK', result: parseInt(imageName) });
+            });
+        });
+    });
+});
+
+
+// 펫 추가
+router.post('/add/pet', async (req, res) => {
+    if (!f.isLogined(req.session)) {
+        res.json({ status: 'ERR_NO_PERMISSION' });
+        return;
+    }
+
+    let registType = req.body.registType;
+    let email = req.body.email;
+    let password = req.body.password;
+    let nickName = req.body.nickName;
 
 });
 
