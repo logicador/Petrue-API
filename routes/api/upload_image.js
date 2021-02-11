@@ -25,7 +25,9 @@ router.post('', (req, res) => {
     
         form.parse(req, (error, body, files) => {
             if (error) {
-                console.log(error);
+                if (fs.existsSync(files.image.path)) {
+                    fs.unlinkSync(files.image.path);
+                }
                 res.json({ status: 'ERR_UPLOAD' });
                 return;
             }

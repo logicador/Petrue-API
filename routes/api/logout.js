@@ -13,9 +13,9 @@ router.post('', async (req, res) => {
         }
 
         let uId = req.session.uId;
-        let query = "UPDATE t_users SET u_is_logined = 'N' WHERE u_id = ?";
+        let query = "UPDATE t_users SET u_is_logined = 'N', u_connected_date = NOW() WHERE u_id = ?";
         let params = [uId];
-        let [result, fields] = await pool.query(query, params);
+        await pool.query(query, params);
 
         req.session.destroy(() => {
             res.json({ status: 'OK' });
