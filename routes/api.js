@@ -9,6 +9,10 @@ router.use('/get/feeds', require('./api/get_feeds.js'));
 router.use('/get/products', require('./api/get_products.js'));
 router.use('/get/diseases', require('./api/get_diseases.js'));
 router.use('/get/food/categories', require('./api/get_food_categories.js'));
+router.use('/get/pet', require('./api/get_pet.js'));
+router.use('/get/pet/ingredient', require('./api/get_pet_ingredient.js'));
+router.use('/get/product/ingredient', require('./api/get_product_ingredient.js'));
+router.use('/get/product/review', require('./api/get_product_review.js'));
 
 
 // POST

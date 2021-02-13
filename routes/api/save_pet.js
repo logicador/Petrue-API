@@ -332,8 +332,8 @@ router.post('', async (req, res) => {
 
         query = "SELECT * FROM t_pets AS peTab";
         query += " JOIN t_breeds AS bTab ON bTab.b_id = peTab.pe_b_id";
-        query += " WHERE peTab.pe_id = ? AND peTab.pe_u_id = ?";
-        params = [peId, uId];
+        query += " WHERE peTab.pe_id = ?";
+        params = [peId];
         [result, fields] = await pool.query(query, params);
 
         let pet = result[0];

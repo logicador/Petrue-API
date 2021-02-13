@@ -18,7 +18,10 @@ router.get('', async (req, res) => {
             fc1Id = 'ALL';
         }
 
-        let query = "SELECT fc1Tab.*,";
+        let query = "SET SESSION group_concat_max_len = 65535";
+        let [result, fields] = await pool.query(query);
+
+        query = "SELECT fc1Tab.*,";
         query += " IFNULL(fc2, '') AS fc2s";
         query += " FROM t_food_categories1 AS fc1Tab";
 
@@ -34,7 +37,7 @@ router.get('', async (req, res) => {
             params.push(fc1Id);
         }
     
-        let [result, fields] = await pool.query(query, params);
+        [result, fields] = await pool.query(query, params);
     
         res.json({ status: 'OK', result: result });
 
