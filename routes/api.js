@@ -20,6 +20,7 @@ router.use('/join', require('./api/join.js'));
 router.use('/login', require('./api/login.js'));
 router.use('/logout', require('./api/logout.js'));
 router.use('/save/pet', require('./api/save_pet.js'));
+router.use('/add/review', require('./api/add_review.js'));
 
 
 // POST - FILE

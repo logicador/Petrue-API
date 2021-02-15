@@ -76,8 +76,13 @@ router.get('', async (req, res) => {
             }
         }
 
+        query = "SET SESSION group_concat_max_len = 65535";
+        await pool.query(query);
+
         // 전체 리뷰들 가져오기
-        query = "SELECT * FROM t_product_reviews AS prTab";
+        query = "SELECT *,";
+        query += " IFNULL((SELECT GROUP_CONCAT(i_path SEPARATOR '|') FROM t_images WHERE i_data_type LIKE 'review' AND i_target_id = prTab.pr_id), '') AS images";
+        query += " FROM t_product_reviews AS prTab";
         query += " JOIN t_users AS uTab ON uTab.u_id = prTab.pr_u_id";
         query += " JOIN t_pets AS peTab ON peTab.pe_id = prTab.pr_pe_id";
         query += " JOIN t_breeds AS bTab ON bTab.b_id = peTab.pe_b_id";
