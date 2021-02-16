@@ -13,6 +13,8 @@ router.use('/get/pet', require('./api/get_pet.js'));
 router.use('/get/pet/ingredient', require('./api/get_pet_ingredient.js'));
 router.use('/get/product/ingredient', require('./api/get_product_ingredient.js'));
 router.use('/get/product/review', require('./api/get_product_review.js'));
+router.use('/get/notices', require('./api/get_notices.js'));
+router.use('/get/pet/weak/diseases', require('./api/get_pet_weak_diseases.js'));
 
 
 // POST
@@ -21,6 +23,9 @@ router.use('/login', require('./api/login.js'));
 router.use('/logout', require('./api/logout.js'));
 router.use('/save/pet', require('./api/save_pet.js'));
 router.use('/add/review', require('./api/add_review.js'));
+router.use('/leave', require('./api/leave.js'));
+router.use('/add/question', require('./api/add_question.js'));
+router.use('/edit/pet', require('./api/edit_pet.js'));
 
 
 // POST - FILE

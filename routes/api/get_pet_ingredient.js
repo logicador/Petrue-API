@@ -7,10 +7,10 @@ const pool = require('../../lib/database');
 // 펫과 관련된 음식, 영양소 정보 가져오기
 router.get('', async (req, res) => {
     try {
-        if (!isLogined(req.session)) {
-            res.json({ status: 'ERR_NO_PERMISSION' });
-            return;
-        }
+        // if (!isLogined(req.session)) {
+        //     res.json({ status: 'ERR_NO_PERMISSION' });
+        //     return;
+        // }
         
         let peId = req.query.peId;
 
@@ -73,6 +73,9 @@ router.get('', async (req, res) => {
         params = [pet.pe_b_id, pet.pe_birth - 10000, pet.pe_birth + 10000, pet.pe_bcs, pet.pe_gender];
         [result, fields] = await pool.query(query, params);
 
+        // 총 유사견 수
+        let similarCnt = result.length;
+
         let diseaseIdList = [];
         for (let i = 0; i < result.length; i++) { diseaseIdList = diseaseIdList.concat(result[i].mpeds.split('|')); }
 
@@ -106,8 +109,28 @@ router.get('', async (req, res) => {
 
         // TODO: 현재 질병쪽에 연관 데이터가 없어서 못함
         // orderedDiseaseIdList 갖고 t_maps_disease_nutrient_food 조회해서 긍정적 음식 및 영양소
-        if (orderedDiseaseIdList.length > 0) {
 
+        // 취약질병 5개 가져오기
+        let weakDiseaseList = [];
+        if (orderedDiseaseIdList.length > 0) {
+            query = "SELECT * FROM t_diseases WHERE";
+            params = [];
+            for (let i = 0; i < orderedDiseaseIdList.length; i++) {
+                if (i > 0) query += " OR";
+                query += " d_id = ?";
+                params.push(orderedDiseaseIdList[i]);
+            }
+            [result, fields] = await pool.query(query, params);
+            weakDiseaseList = result;
+        }
+
+        for (let i = 0; i < weakDiseaseList.length; i++) {
+            for (let j = 0; j < cntDiseaseIdList.length; j++) {
+                if (weakDiseaseList[i].d_id == cntDiseaseIdList[j].dId) {
+                    weakDiseaseList[i].cnt = cntDiseaseIdList[j].cnt;
+                    break;
+                }
+            }
         }
 
         let warningFoodList = []; // 주의 음식
@@ -170,7 +193,10 @@ router.get('', async (req, res) => {
             goodFoodList: goodFoodList,
             goodNutrientList: goodNutrientList,
             similarGoodFoodList: similarGoodFoodList,
-            similarGoodNutrientList: similarGoodNutrientList
+            similarGoodNutrientList: similarGoodNutrientList,
+
+            similarCnt: similarCnt,
+            weakDiseaseList: weakDiseaseList.sort((a, b) => { return a.cnt - b.cnt; }).reverse()
         }});
 
     } catch(error) {
