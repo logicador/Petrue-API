@@ -7,10 +7,10 @@ const pool = require('../../lib/database');
 // 제품 음식, 영양소 정보 가져오기
 router.get('', async (req, res) => {
     try {
-        if (!isLogined(req.session)) {
-            res.json({ status: 'ERR_NO_PERMISSION' });
-            return;
-        }
+        // if (!isLogined(req.session)) {
+        //     res.json({ status: 'ERR_NO_PERMISSION' });
+        //     return;
+        // }
         
         let pId = req.query.pId;
 
@@ -65,13 +65,14 @@ router.get('', async (req, res) => {
 
         // 연관 영양소 가져오기
         if (nutrientIdList.length > 0) {
-            query = "SELECT * FROM t_nutrients WHERE ";
+            query = "SELECT * FROM t_nutrients WHERE n_id IN (";
             params = [];
             for (let i = 0; i < nutrientIdList.length; i++) {
-                if (i > 0) query += " OR";
-                query += " n_id = ?";
+                if (i > 0) query += " ,";
+                query += " ?";
                 params.push(nutrientIdList[i]);
             }
+            query += " )";
             [result, fields] = await pool.query(query, params);
             nutrientList = result;
         }

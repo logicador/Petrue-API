@@ -53,15 +53,14 @@ router.get('', async (req, res) => {
 
         // 유사견들이 해당 제품에 남긴 리뷰 가져오기
         if (result.length > 0) {
-            query = "SELECT * FROM t_product_reviews WHERE (";
-            params = [];
+            query = "SELECT * FROM t_product_reviews WHERE pr_p_id = ? AND pr_pe_id IN (";
+            params = [pId];
             for (let i = 0; i < result.length; i++) {
-                if (i > 0) query += " OR";
-                query += " pr_pe_id = ?";
+                if (i > 0) query += " ,";
+                query += " ?";
                 params.push(result[i].pe_id);
             }
-            query += " ) AND pr_p_id = ?";
-            params.push(pId);
+            query += " )";
             [result, fields] = await pool.query(query, params);
 
             similarCnt = result.length;
@@ -106,16 +105,28 @@ router.get('', async (req, res) => {
         res.json({ status: 'OK', result: {
             productReviewList: productReviewList,
 
-            similarTotalScore: nanTo(parseFloat((similarTotalScore / similarCnt).toFixed(1)), 0),
-            similarPalaScore: nanTo(parseFloat((similarPalaScore / similarCnt).toFixed(1)), 0),
-            similarBeneScore: nanTo(parseFloat((similarBeneScore / similarCnt).toFixed(1)), 0),
-            similarCostScore: nanTo(parseFloat((similarCostScore / similarCnt).toFixed(1)), 0),
+            // similarTotalScore: nanTo(parseFloat((similarTotalScore / similarCnt).toFixed(1)), 0),
+            // similarPalaScore: nanTo(parseFloat((similarPalaScore / similarCnt).toFixed(1)), 0),
+            // similarBeneScore: nanTo(parseFloat((similarBeneScore / similarCnt).toFixed(1)), 0),
+            // similarCostScore: nanTo(parseFloat((similarCostScore / similarCnt).toFixed(1)), 0),
+            // similarSidePer: nanTo(parseInt((similarSideCnt / similarCnt) * 100), 0),
+
+            // totalScore: nanTo(parseFloat((totalScore / cnt).toFixed(1)), 0),
+            // palaScore: nanTo(parseFloat((palaScore / cnt).toFixed(1)), 0),
+            // beneScore: nanTo(parseFloat((beneScore / cnt).toFixed(1)), 0),
+            // costScore: nanTo(parseFloat((costScore / cnt).toFixed(1)), 0),
+            // sidePer: nanTo(parseInt((sideCnt / cnt) * 100), 0)
+
+            similarTotalScore: nanTo(similarTotalScore / similarCnt, 0),
+            similarPalaScore: nanTo(similarPalaScore / similarCnt, 0),
+            similarBeneScore: nanTo(similarBeneScore / similarCnt, 0),
+            similarCostScore: nanTo(similarCostScore / similarCnt, 0),
             similarSidePer: nanTo(parseInt((similarSideCnt / similarCnt) * 100), 0),
 
-            totalScore: nanTo(parseFloat((totalScore / cnt).toFixed(1)), 0),
-            palaScore: nanTo(parseFloat((palaScore / cnt).toFixed(1)), 0),
-            beneScore: nanTo(parseFloat((beneScore / cnt).toFixed(1)), 0),
-            costScore: nanTo(parseFloat((costScore / cnt).toFixed(1)), 0),
+            totalScore: nanTo(totalScore / cnt, 0),
+            palaScore: nanTo(palaScore / cnt, 0),
+            beneScore: nanTo(beneScore / cnt, 0),
+            costScore: nanTo(costScore / cnt, 0),
             sidePer: nanTo(parseInt((sideCnt / cnt) * 100), 0)
         }});
 

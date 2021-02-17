@@ -113,13 +113,14 @@ router.get('', async (req, res) => {
         // 취약질병 5개 가져오기
         let weakDiseaseList = [];
         if (orderedDiseaseIdList.length > 0) {
-            query = "SELECT * FROM t_diseases WHERE";
+            query = "SELECT * FROM t_diseases WHERE d_id IN (";
             params = [];
             for (let i = 0; i < orderedDiseaseIdList.length; i++) {
-                if (i > 0) query += " OR";
-                query += " d_id = ?";
+                if (i > 0) query += " ,";
+                query += " ?";
                 params.push(orderedDiseaseIdList[i]);
             }
+            query += " )";
             [result, fields] = await pool.query(query, params);
             weakDiseaseList = result;
         }
@@ -150,13 +151,14 @@ router.get('', async (req, res) => {
             query += " WHERE mfnTab.mfn_f_id = fTab.f_id)";
             query += " , '') AS mfns";
 
-            query += " FROM t_foods AS fTab WHERE";
+            query += " FROM t_foods AS fTab WHERE fTab.f_fc2_id IN (";
             params = [];
             for (let i = 0; i < petFoodCategory2IdList.length; i++) {
-                if (i > 0) query += " OR";
-                query += " fTab.f_fc2_id = ?";
+                if (i > 0) query += " ,";
+                query += " ?";
                 params.push(petFoodCategory2IdList[i]);
             }
+            query += " )";
             [result, fields] = await pool.query(query, params);
 
             // 주의 음식
@@ -164,18 +166,19 @@ router.get('', async (req, res) => {
 
             // 주의 영양소 가져오기
             petNutrientIdList = [];
-            query = "SELECT * FROM t_nutrients WHERE";
+            query = "SELECT * FROM t_nutrients WHERE n_id IN (";
             params = [];
             for (let i = 0; i < warningFoodList.length; i++) {
                 let petNutrientIdList = warningFoodList[i].mfns.split('|');
                 for (let j = 0; j < petNutrientIdList.length; j++) {
                     if (params.includes(petNutrientIdList[j])) continue;
 
-                    if (i == 0 && j == 0) query += " n_id = ?";
-                    else query += " OR n_id = ?";
+                    if (i == 0 && j == 0) query += " ?";
+                    else query += " , ?";
                     params.push(petNutrientIdList[j]);
                 }
             }
+            query += " )";
             [result, fields] = await pool.query(query, params);
 
             // 주의 영양소

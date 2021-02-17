@@ -78,46 +78,46 @@ router.get('', async (req, res) => {
             // 유사견 스코어
             if (similarPetList.length > 0) {
                 // 리뷰 개수
-                query += " , (SELECT COUNT(*) FROM t_product_reviews WHERE pr_p_id = pTab.p_id AND (";
+                query += " , (SELECT COUNT(*) FROM t_product_reviews WHERE pr_p_id = pTab.p_id AND pr_pe_id IN (";
                 for (let i = 0; i < similarPetList.length; i++) {
-                    if (i > 0) query += " OR";
-                    query += " pr_pe_id = ?";
+                    if (i > 0) query += " ,";
+                    query += " ?";
                     params.push(similarPetList[i].pe_id);
                 }
                 query += " )) AS reviewCnt,";
 
                 // 기호성 평균
-                query += " IFNULL((SELECT AVG(pr_pala_score) FROM t_product_reviews WHERE pr_p_id = pTab.p_id AND (";
+                query += " IFNULL((SELECT AVG(pr_pala_score) FROM t_product_reviews WHERE pr_p_id = pTab.p_id AND pr_pe_id IN (";
                 for (let i = 0; i < similarPetList.length; i++) {
-                    if (i > 0) query += " OR";
-                    query += " pr_pe_id = ?";
+                    if (i > 0) query += " ,";
+                    query += " ?";
                     params.push(similarPetList[i].pe_id);
                 }
                 query += " )), 0) AS palaScore,";
 
                 // 기대효과 평균
-                query += " IFNULL((SELECT AVG(pr_bene_score) FROM t_product_reviews WHERE pr_p_id = pTab.p_id AND (";
+                query += " IFNULL((SELECT AVG(pr_bene_score) FROM t_product_reviews WHERE pr_p_id = pTab.p_id AND pr_pe_id IN (";
                 for (let i = 0; i < similarPetList.length; i++) {
-                    if (i > 0) query += " OR";
-                    query += " pr_pe_id = ?";
+                    if (i > 0) query += " ,";
+                    query += " ?";
                     params.push(similarPetList[i].pe_id);
                 }
                 query += " )), 0) AS beneScore,";
 
                 // 가성비 평균
-                query += " IFNULL((SELECT AVG(pr_cost_score) FROM t_product_reviews WHERE pr_p_id = pTab.p_id AND (";
+                query += " IFNULL((SELECT AVG(pr_cost_score) FROM t_product_reviews WHERE pr_p_id = pTab.p_id AND pr_pe_id IN (";
                 for (let i = 0; i < similarPetList.length; i++) {
-                    if (i > 0) query += " OR";
-                    query += " pr_pe_id = ?";
+                    if (i > 0) query += " ,";
+                    query += " ?";
                     params.push(similarPetList[i].pe_id);
                 }
                 query += " )), 0) AS costScore,";
 
                 // 부작용 개수
-                query += " IFNULL((SELECT COUNT(*) FROM t_product_reviews WHERE pr_p_id = pTab.p_id AND pr_side LIKE 'Y' AND (";
+                query += " IFNULL((SELECT COUNT(*) FROM t_product_reviews WHERE pr_p_id = pTab.p_id AND pr_side LIKE 'Y' AND pr_pe_id IN (";
                 for (let i = 0; i < similarPetList.length; i++) {
-                    if (i > 0) query += " OR";
-                    query += " pr_pe_id = ?";
+                    if (i > 0) query += " ,";
+                    query += " ?";
                     params.push(similarPetList[i].pe_id);
                 }
                 query += " )), 0) AS sideCnt";

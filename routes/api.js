@@ -14,7 +14,6 @@ router.use('/get/pet/ingredient', require('./api/get_pet_ingredient.js'));
 router.use('/get/product/ingredient', require('./api/get_product_ingredient.js'));
 router.use('/get/product/review', require('./api/get_product_review.js'));
 router.use('/get/notices', require('./api/get_notices.js'));
-router.use('/get/pet/weak/diseases', require('./api/get_pet_weak_diseases.js'));
 
 
 // POST
