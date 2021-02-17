@@ -35,7 +35,7 @@ router.post('', async (req, res) => {
         let allergyIdList = req.body.allergyIdList; // NULL
 
         // 필수값 체크
-        if (isNone(name) || isNone(birth) || isNone(bId) || isNone(gender) || 
+        if (isNone(name) || isNone(birth) || isNone(bId) || isNone(gender) ||
             isNone(bcs) || isNone(neuter) || isNone(inoculation) || isNone(serial)) {
             res.json({ status: 'ERR_WRONG_PARAMS' });
             return;
@@ -105,7 +105,7 @@ router.post('', async (req, res) => {
         //     res.json({ status: 'ERR_WRONG_PARAMS' });
         //     return;
         // }
-        
+
         // // 연월일 자르기
         // let splitBirthYear = birth.substring(0, 4);
         // let splitBirthMonth = birth.substring(4, 6);
@@ -227,7 +227,7 @@ router.post('', async (req, res) => {
             params = [uId];
             [result, fields] = await pool.query(query, params);
 
-            if (result[0].petCnt == 0) {
+            if (result[0].petCnt == 1) {
                 query = "UPDATE t_users SET u_pe_id = ? WHERE u_id = ?";
                 params = [peId, uId];
                 await pool.query(query, params);
@@ -266,7 +266,7 @@ router.post('', async (req, res) => {
             await pool.query(query, params);
 
             params = [peId];
-            
+
             query = "DELETE FROM t_maps_pet_product WHERE mpep_pe_id = ?";
             await pool.query(query, params);
 

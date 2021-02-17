@@ -4,7 +4,7 @@ const { isLogined, isNone } = require('../../lib/common');
 const pool = require('../../lib/database');
 
 
-// 질병 가져오기
+// 증상 가져오기
 router.get('', async (req, res) => {
     try {
         // if (!isLogined(req.session)) {
@@ -13,23 +13,17 @@ router.get('', async (req, res) => {
         // }
 
         let bpId = req.query.bpId;
-        let keyword = req.query.keyword;
 
         if (isNone(bpId)) {
             bpId = 'ALL';
         }
 
-        let query = "SELECT * FROM t_diseases WHERE 1 = 1";
+        let query = "SELECT * FROM t_symptoms";
         let params = [];
 
         if (bpId != 'ALL') {
-            query += " AND d_bp_id = ?";
+            query += " WHERE s_bp_id = ?";
             params.push(bpId);
-        }
-
-        if (!isNone(keyword)) {
-            query += " AND d_keyword LIKE ?";
-            params.push(`%${keyword}%`);
         }
 
         let [result, fields] = await pool.query(query, params);

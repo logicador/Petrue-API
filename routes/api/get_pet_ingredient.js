@@ -11,7 +11,7 @@ router.get('', async (req, res) => {
         //     res.json({ status: 'ERR_NO_PERMISSION' });
         //     return;
         // }
-        
+
         let peId = req.query.peId;
 
         if (isNone(peId)) {
@@ -26,9 +26,9 @@ router.get('', async (req, res) => {
 
         let query = "SET SESSION group_concat_max_len = 65535";
         let [result, fields] = await pool.query(query);
-        
+
         query = "SELECT peTab.*,";
-        
+
         // 대상 펫의 알러지 - 주의성분 산출할거임
         query += " IFNULL(";
         query += " (SELECT GROUP_CONCAT(mpefc2Tab.mpefc2_fc2_id SEPARATOR '|')";
@@ -53,8 +53,8 @@ router.get('', async (req, res) => {
         }
 
         let pet = result[0];
-        let petFoodCategory2IdList = pet.mpefc2s.split('|'); // 알러지
-        let petDiseaseIdList = pet.mpeds.split('|'); // 병력
+        let petFoodCategory2IdList = (pet.mpefc2s == '') ? [] : pet.mpefc2s.split('|'); // 알러지
+        let petDiseaseIdList = (pet.mpeds == '') ? [] : pet.mpeds.split('|'); // 병력
 
         // 유사견 리스트 뽑기 > 취약질병 10순위 뽑기 - 긍정성분 산출 (유사견 기준)
         query = "SELECT *,";
@@ -77,7 +77,7 @@ router.get('', async (req, res) => {
         let similarCnt = result.length;
 
         let diseaseIdList = [];
-        for (let i = 0; i < result.length; i++) { diseaseIdList = diseaseIdList.concat(result[i].mpeds.split('|')); }
+        for (let i = 0; i < result.length; i++) { diseaseIdList = diseaseIdList.concat((result[i].mpeds == '') ? [] : result[i].mpeds.split('|')); }
 
         // cnt 뽑아오기 { id: cnt, id: cnt }
         let cntDiseaseIdDict = {};
@@ -100,7 +100,7 @@ router.get('', async (req, res) => {
             if (orderedDiseaseIdList.length == 5) break;
             orderedDiseaseIdList.push(cntDiseaseIdList[i].dId);
         }
-        
+
         // TODO: 현재 질병쪽에 연관 데이터가 없어서 못함
         // petDiseaseIdList 갖고 t_maps_disease_nutrient_food 조회해서 긍정적 음식 및 영양소
         if (petDiseaseIdList.length > 0) {
@@ -179,10 +179,11 @@ router.get('', async (req, res) => {
                 }
             }
             query += " )";
+            if (params.length > 0) {
             [result, fields] = await pool.query(query, params);
-
             // 주의 영양소
             warningNutrientList = result;
+            }
         }
 
         goodFoodList = warningFoodList;
