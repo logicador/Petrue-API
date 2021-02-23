@@ -17,6 +17,8 @@ router.use('/get/notices', require('./api/get_notices.js'));
 router.use('/get/symptoms', require('./api/get_symptoms.js'));
 router.use('/get/foods', require('./api/get_foods.js'));
 router.use('/get/food/detail', require('./api/get_food_detail.js'));
+router.use('/get/disease/detail', require('./api/get_disease_detail.js'));
+router.use('/get/symptom/detail', require('./api/get_symptom_detail.js'));
 
 
 // POST

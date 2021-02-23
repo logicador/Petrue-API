@@ -21,9 +21,9 @@ router.get('', async (req, res) => {
 
 
         let query = "SELECT fTab.*,";
-        query += " IFNULL((SELECT GROUP_CONCAT(mfn_n_id SEPARATOR '|') FROM t_maps_food_nutrient WHERE mfn_f_id = fTab.f_id), '') AS mfns,"
-        query += " IFNULL((SELECT GROUP_CONCAT(mdnf_d_id SEPARATOR '|') FROM t_maps_disease_nutrient_food WHERE mdnf_type LIKE 'FOOD' AND mdnf_target_id = fTab.f_id), '') AS mdnfs,"
-        query += " IFNULL((SELECT GROUP_CONCAT(msnf_s_id SEPARATOR '|') FROM t_maps_symptom_nutrient_food WHERE msnf_type LIKE 'FOOD' AND msnf_target_id = fTab.f_id), '') AS msnfs"
+        query += " IFNULL((SELECT GROUP_CONCAT(mfn_n_id SEPARATOR '|') FROM t_maps_food_nutrient WHERE mfn_f_id = fTab.f_id), '') AS mfns,";
+        query += " IFNULL((SELECT GROUP_CONCAT(mdnf_d_id SEPARATOR '|') FROM t_maps_disease_nutrient_food WHERE mdnf_type LIKE 'FOOD' AND mdnf_target_id = fTab.f_id), '') AS mdnfs,";
+        query += " IFNULL((SELECT GROUP_CONCAT(msnf_s_id SEPARATOR '|') FROM t_maps_symptom_nutrient_food WHERE msnf_type LIKE 'FOOD' AND msnf_target_id = fTab.f_id), '') AS msnfs";
         query += " FROM t_foods AS fTab WHERE fTab.f_id = ?";
         let params = [fId];
 
