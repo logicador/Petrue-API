@@ -19,6 +19,10 @@ router.use('/get/foods', require('./api/get_foods.js'));
 router.use('/get/food/detail', require('./api/get_food_detail.js'));
 router.use('/get/disease/detail', require('./api/get_disease_detail.js'));
 router.use('/get/symptom/detail', require('./api/get_symptom_detail.js'));
+router.use('/get/pet/inoculations', require('./api/get_pet_inoculations.js'));
+router.use('/get/pet/products', require('./api/get_pet_products.js'));
+router.use('/get/pet/diseases', require('./api/get_pet_diseases.js'));
+router.use('/get/pet/food/categories2', require('./api/get_pet_food_categories2.js'));
 
 
 // POST

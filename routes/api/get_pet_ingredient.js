@@ -113,7 +113,12 @@ router.get('', async (req, res) => {
         // 취약질병 5개 가져오기
         let weakDiseaseList = [];
         if (orderedDiseaseIdList.length > 0) {
-            query = "SELECT * FROM t_diseases WHERE d_id IN (";
+            query = "SELECT dTab.*,";
+            query += " IFNULL((SELECT GROUP_CONCAT(sTab.s_name SEPARATOR '|') FROM t_maps_symptom_disease AS msdTab";
+            query += " JOIN t_symptoms AS sTab ON sTab.s_id = msdTab.msd_s_id";
+            query += " WHERE msdTab.msd_d_id = dTab.d_id";
+            query += " ), '') AS symptomNames";
+            query += " FROM t_diseases AS dTab WHERE dTab.d_id IN (";
             params = [];
             for (let i = 0; i < orderedDiseaseIdList.length; i++) {
                 if (i > 0) query += " ,";
